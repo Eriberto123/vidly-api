@@ -1,10 +1,13 @@
 const express = require('express');
 const helmet = require('helmet');
 const morgan = require('morgan');
-const home = require('./routes/home');
-const genres = require('./routes/genres');
 const mongoose = require('mongoose');
 const config = require('config');
+
+//Routes
+const home = require('./routes/home');
+const genres = require('./routes/genres');
+const customer = require('./routes/customer');
 
 const app = express();
 
@@ -16,6 +19,8 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static('public'));
 app.use(helmet());
+
+app.use('/api/customer', customer);
 app.use('/api/genres', genres);
 app.use('/', home);
 

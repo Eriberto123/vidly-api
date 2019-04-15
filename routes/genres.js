@@ -29,14 +29,19 @@ genresRouter.get('/:id', async (req, res) => {
  * Creates a new genre
  */
 genresRouter.post('/', async (req, res) => {
-    let { error } = ValidateGenre(req.body);
-    if (error) return res.status(400).send(error.details[0].message);
-    let genre = new Genra({
-        name: req.body.name
-    });
-
-    genre = await genre.save();
-    res.send(result);
+    try {
+        let { error } = ValidateGenre(req.body);
+        if (error) return res.status(400).send(error.details[0].message);
+        let genre = new Genra({
+            name: req.body.name
+        });
+        await genre.validate();
+        genre = await genre.save();
+        res.send(result);
+    } catch (error) {
+        console.error(error);
+        res.status(500).send('There was something wrong in the server ', error.message);
+    }
 });
 
 /**
