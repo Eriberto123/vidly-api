@@ -1,13 +1,12 @@
 const express = require('express');
 const genresRouter = express.Router();
-const Joi = require('joi');
-const Genra = require('../schemas/genre');
+const { Genre, validate } = require('../schemas/genre');
 
 /*
  * Gets all the genres
  */
 genresRouter.get('/', async (req, res) => {
-    let genres = await Genra.find().sort({ name: 1 }).exec();
+    let genres = await Genre.find().sort({ name: 1 }).exec();
     res.send(genres);
 });
 
@@ -17,7 +16,7 @@ genresRouter.get('/', async (req, res) => {
 genresRouter.get('/:id', async (req, res) => {
     try {
         let id = req.params.id;
-        let genre = await Genra.findById(id).exec();
+        let genre = await Genre.findById(id).exec();
         if (!genre) res.send('The genre with the given id was not found');
         res.send(genre);
     } catch (error) {
@@ -30,14 +29,14 @@ genresRouter.get('/:id', async (req, res) => {
  */
 genresRouter.post('/', async (req, res) => {
     try {
-        let { error } = ValidateGenre(req.body);
+        let { error } = validate(req.body);
         if (error) return res.status(400).send(error.details[0].message);
-        let genre = new Genra({
+        let genre = new Genre({
             name: req.body.name
         });
         await genre.validate();
         genre = await genre.save();
-        res.send(result);
+        res.send(genre);
     } catch (error) {
         console.error(error);
         res.status(500).send('There was something wrong in the server ', error.message);
@@ -48,16 +47,16 @@ genresRouter.post('/', async (req, res) => {
  * Updates an specific genre by id
  */
 genresRouter.put('/:id', async (req, res) => {
-    let genre = await Genra.findById(req.params.id);
+    let genre = await Genre.findById(req.params.id);
     if (!genre) return res.status(404).send('The genre with the given id was not found');
-    let { error } = ValidateGenre(req.body);
+    let { error } = validate(req.body);
 
     if (error) {
         res.status(400).send(error.details[0].message);
         return;
     }
 
-    let result = await Genra.findOneAndUpdate(req.params.id, {
+    let result = await Genre.findOneAndUpdate(req.params.id, {
         $set: {
             name: req.body.name
         }
@@ -69,20 +68,10 @@ genresRouter.put('/:id', async (req, res) => {
  * Deletes a genre by id 
  */
 genresRouter.delete('/:id', async (req, res) => {
-    let genre = await Genra.findById(req.params.id);
+    let genre = await Genre.findById(req.params.id);
     if (!genre) return res.status(404).send('The genre with the given id was not found');
-    let deleted = await Genra.findOneAndDelete(req.body.id);
+    let deleted = await Genre.findOneAndDelete(req.body.id);
     res.send(deleted);
 });
-
-/*
- * Validates some properties with JOI
- */
-function ValidateGenre(genre) {
-    const genreSchema = {
-        name: Joi.string().min(3).required()
-    };
-    return Joi.validate(genre, genreSchema);
-}
 
 module.exports = genresRouter;

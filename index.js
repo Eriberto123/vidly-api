@@ -7,7 +7,7 @@ const config = require('config');
 //Routes
 const home = require('./routes/home');
 const genres = require('./routes/genres');
-const customer = require('./routes/customer');
+const customer = require('./routes/customers');
 
 const app = express();
 
